@@ -56,7 +56,7 @@ const material = new THREE.MeshStandardMaterial({
   // gradientMap: gradientTexture,
 });
 material.metalness = 0.95;
-material.roughness = 0.15;
+material.roughness = 0.14;
 material.envMap = enviromentMapTexture;
 
 gui.add(material, "metalness").min(0).max(1).step(0.0001);
