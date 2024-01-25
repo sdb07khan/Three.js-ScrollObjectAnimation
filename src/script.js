@@ -2,6 +2,8 @@ import * as THREE from "three";
 import * as dat from "lil-gui";
 import gsap from "gsap";
 
+gsap.registerPlugin(ScrollTrigger);
+
 /**
  * Debug
  */
@@ -30,16 +32,35 @@ const scene = new THREE.Scene();
  */
 // Textures
 const textureLoader = new THREE.TextureLoader();
+const cubeTextureLoader = new THREE.CubeTextureLoader();
 const gradientTexture = textureLoader.load("/textures/gradients/3.jpg");
 const particleTexture = textureLoader.load("/textures/particles/4.png");
+const matcapTexture = textureLoader.load("/textures/matcaps/3.png");
+const doorMetalnessTexture = textureLoader.load("/textures/door/metalness.jpg");
+const doorRoughnessTexture = textureLoader.load("/textures/door/roughness.jpg");
 // console.log(particleTexture);
 gradientTexture.magFilter = THREE.NearestFilter;
+
+const enviromentMapTexture = cubeTextureLoader.load([
+  "/textures/environmentMaps/1/px.jpg",
+  "/textures/environmentMaps/1/nx.jpg",
+  "/textures/environmentMaps/1/py.jpg",
+  "/textures/environmentMaps/1/ny.jpg",
+  "/textures/environmentMaps/1/pz.jpg",
+  "/textures/environmentMaps/1/nz.jpg",
+]);
 
 // Material
 const material = new THREE.MeshStandardMaterial({
   color: parameters.materialColor,
-  gradientMap: gradientTexture,
+  // gradientMap: gradientTexture,
 });
+material.metalness = 0.95;
+material.roughness = 0.15;
+material.envMap = enviromentMapTexture;
+
+gui.add(material, "metalness").min(0).max(1).step(0.0001);
+gui.add(material, "roughness").min(0).max(1).step(0.0001);
 
 // Meshes
 const objectDistance = 4;
@@ -51,6 +72,9 @@ const mesh3 = new THREE.Mesh(
   new THREE.TorusKnotGeometry(0.8, 0.35, 100, 20),
   material
 );
+
+mesh2.visible = false;
+mesh3.visible = false;
 
 mesh1.position.y = -objectDistance * 0;
 mesh2.position.y = -objectDistance * 1;
@@ -142,12 +166,12 @@ scene.add(cameraGroup);
 
 // Base camera
 const camera = new THREE.PerspectiveCamera(
-  35,
+  40,
   sizes.width / sizes.height,
   0.1,
   100
 );
-camera.position.z = 6;
+camera.position.z = 10;
 cameraGroup.add(camera);
 
 /**
@@ -160,27 +184,82 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-// Scroll
-let scrollY = window.scrollY;
-let currentSection = 0;
+// mesh animation
 
-window.addEventListener("scroll", () => {
-  scrollY = window.scrollY;
+const mesh1Animation = gsap.timeline();
 
-  const newSection = Math.round(scrollY / sizes.height);
+mesh1Animation
+  .to(camera.position, {
+    z: "7",
+  })
+  .to(
+    mesh1.position,
+    {
+      duration: 0.6,
+      y: -4,
+      x: -2.5,
+      // z: 2,
+    },
+    "<"
+  )
+  .to(
+    mesh1.rotation,
+    {
+      // duration: 1.2,
+      y: 4,
+      x: 2,
+    },
+    "<"
+  )
+  .to(camera.position, {
+    z: "10",
+  })
+  .to(
+    mesh1.position,
+    {
+      duration: 0.6,
+      y: -11,
+      x: 5,
+      // z: 0,
+    },
+    "<"
+  )
+  .to(
+    mesh1.rotation,
+    {
+      // duration: 1.2,
+      y: -2.5,
+      x: -1,
+    },
+    "<"
+  );
 
-  if (newSection != currentSection) {
-    currentSection = newSection;
-
-    gsap.to(sectionMeshes[currentSection].rotation, {
-      duration: 1.5,
-      ease: "power2.inOut",
-      x: "+=6",
-      y: "+=3",
-      z: "+=1.5",
-    });
-  }
+ScrollTrigger.create({
+  animation: mesh1Animation,
+  trigger: "scrollY",
+  scrub: 1,
+  start: "top top",
+  end: () => `+=${document.documentElement.scrollHeight}`,
+  // end: "+=1000%",
+  toggleActions: "play none none reverse",
 });
+
+// Scroll
+// let scrollY = window.scrollY;
+// let currentSection = 0;
+
+// window.addEventListener("scroll", () => {
+//   scrollY = window.scrollY;
+
+//   // console.log(scrollY);
+
+//   // const newSection = Math.round(scrollY / sizes.height);
+
+//   // if (newSection != currentSection) {
+//   //   currentSection = newSection;
+
+//   // }
+// });
 
 // Cursor
 const cursor = {};
@@ -216,10 +295,10 @@ const tick = () => {
     (parallaxY - cameraGroup.position.y) * 5 * deltaTime;
 
   // Animate Meshes
-  for (const mesh of sectionMeshes) {
-    mesh.rotation.x += deltaTime * 0.1;
-    mesh.rotation.y += deltaTime * 0.12;
-  }
+  // for (const mesh of sectionMeshes) {
+  //   mesh.rotation.x += deltaTime * 0.1;
+  //   mesh.rotation.y += deltaTime * 0.12;
+  // }
 
   // Render
   renderer.render(scene, camera);
