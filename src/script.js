@@ -1,6 +1,7 @@
 import * as THREE from "three";
-import * as dat from "lil-gui";
 import gsap from "gsap";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import * as dat from "lil-gui";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -26,6 +27,91 @@ const canvas = document.querySelector("canvas.webgl");
 
 // Scene
 const scene = new THREE.Scene();
+
+// Models
+
+const gltfLoader = new GLTFLoader();
+
+let mixer = null;
+const objectDistance = 4;
+
+gltfLoader.load("/models/source/tesla_2018_model_3.glb", (gltf) => {
+  //   console.log(gltf.scene);
+  // mixer = new THREE.AnimationMixer(gltf.scene);
+  // const action = mixer.clipAction(gltf.animations[0]);
+
+  // action.play();
+  const model = gltf.scene;
+
+  model.scale.set(0.01, 0.01, 0.01);
+  model.rotation.set(0, Math.PI, 0);
+  model.position.set(2, -objectDistance * 0, 0);
+  scene.add(model);
+
+  //   const children = [...gltf.scene.children];
+
+  //   for (const child of children) {
+  //     scene.add(child);
+  //   }
+
+  const modelAnimation = gsap.timeline();
+
+  modelAnimation
+    .to(camera.position, {
+      z: "7",
+    })
+    .to(
+      model.position,
+      {
+        duration: 0.6,
+        y: -4,
+        x: -2.5,
+        z: 1.5,
+      },
+      "<"
+    )
+    .to(
+      model.rotation,
+      {
+        // duration: 1.2,
+        y: 0,
+        x: 0.8,
+      },
+      "<"
+    )
+    .to(camera.position, {
+      z: "10",
+    })
+    .to(
+      model.position,
+      {
+        duration: 0.6,
+        y: -11,
+        x: 6,
+        // z: 0,
+      },
+      "<"
+    )
+    .to(
+      model.rotation,
+      {
+        // duration: 1.2,
+        y: 4,
+        x: -0.5,
+      },
+      "<"
+    );
+
+  ScrollTrigger.create({
+    animation: modelAnimation,
+    trigger: "scrollY",
+    scrub: 1,
+    start: "top top",
+    end: () => `+=${document.documentElement.scrollHeight}`,
+    // end: "+=1000%",
+    toggleActions: "play none none reverse",
+  });
+});
 
 /**
  * Objects
@@ -59,11 +145,11 @@ material.metalness = 0.95;
 material.roughness = 0.14;
 material.envMap = enviromentMapTexture;
 
-gui.add(material, "metalness").min(0).max(1).step(0.0001);
-gui.add(material, "roughness").min(0).max(1).step(0.0001);
+// gui.add(material, "metalness").min(0).max(1).step(0.0001);
+// gui.add(material, "roughness").min(0).max(1).step(0.0001);
 
 // Meshes
-const objectDistance = 4;
+// const objectDistance = 4;
 const mesh1 = new THREE.Mesh(new THREE.TorusGeometry(1, 0.4, 16, 60), material);
 
 const mesh2 = new THREE.Mesh(new THREE.ConeGeometry(1, 2, 32), material);
@@ -73,6 +159,7 @@ const mesh3 = new THREE.Mesh(
   material
 );
 
+mesh1.visible = false;
 mesh2.visible = false;
 mesh3.visible = false;
 
@@ -282,6 +369,12 @@ const tick = () => {
   const deltaTime = elapsedTime - previousTime; // Delta is used to make the animation speed same for all screen FPS
   previousTime = elapsedTime;
   // console.log(deltaTime);
+
+  // update mixer
+
+  if (mixer !== null) {
+    mixer.update(deltaTime);
+  }
 
   // Animate camera
   camera.position.y = (-scrollY / sizes.height) * objectDistance;
