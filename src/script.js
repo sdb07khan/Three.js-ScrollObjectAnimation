@@ -44,8 +44,8 @@ gltfLoader.load("/models/source/tesla_2018_model_3.glb", (gltf) => {
   const model = gltf.scene;
 
   model.scale.set(0.01, 0.01, 0.01);
-  model.rotation.set(0, Math.PI, 0);
-  model.position.set(2, -objectDistance * 0, 0);
+  model.rotation.set(0, -4.5, 0);
+  model.position.set(2.5, -objectDistance * -0.3, 0);
   scene.add(model);
 
   //   const children = [...gltf.scene.children];
@@ -57,16 +57,29 @@ gltfLoader.load("/models/source/tesla_2018_model_3.glb", (gltf) => {
   const modelAnimation = gsap.timeline();
 
   modelAnimation
-    .to(camera.position, {
-      z: "7",
-    })
+    .to(
+      camera.position,
+      {
+        z: "10",
+      },
+      "<"
+    )
+    .to(
+      model.scale,
+      {
+        x: 0.02,
+        y: 0.02,
+        z: 0.02,
+      },
+      "<"
+    )
     .to(
       model.position,
       {
-        duration: 0.6,
-        y: -4,
-        x: -2.5,
-        z: 1.5,
+        duration: 0.5,
+        y: -7,
+        x: -1,
+        z: 1,
       },
       "<"
     )
@@ -75,37 +88,68 @@ gltfLoader.load("/models/source/tesla_2018_model_3.glb", (gltf) => {
       {
         // duration: 1.2,
         y: 0,
-        x: 0.8,
+        x: 0.6,
+        // z: -1,
       },
       "<"
     )
     .to(camera.position, {
-      z: "10",
+      z: "4",
     })
+    // .to(
+    //   model.scale,
+    //   {
+    //     x: 0.01,
+    //     y: 0.01,
+    //     z: 0.01,
+    //   },
+    //   "<"
+    // )
+
+    // .to(
+    //   model.scale,
+    //   {
+    //     x: 0.03,
+    //     y: 0.03,
+    //     z: 0.03,
+    //   },
+    //   "<"
+    // )
     .to(
       model.position,
       {
-        duration: 0.6,
-        y: -11,
-        x: 6,
-        // z: 0,
-      },
-      "<"
-    )
-    .to(
-      model.rotation,
-      {
-        // duration: 1.2,
-        y: 4,
-        x: -0.5,
+        duration: 1,
+        y: -20,
+        x: 20,
+        z: 3,
       },
       "<"
     );
+  // .to(
+  //   model.rotation,
+  //   {
+  //     // duration: 1.2,
+  //     y: 4,
+  //     x: -0.5,
+  //   },
+  //   "<"
+  // )
+
+  // .to(
+  //   model.position,
+  //   {
+  //     duration: 0.6,
+  //     y: -50,
+  //     x: -20,
+  //     // z: 0,
+  //   },
+  //   "<"
+  // );
 
   ScrollTrigger.create({
     animation: modelAnimation,
-    trigger: "scrollY",
-    scrub: 1,
+    trigger: ".webgl",
+    scrub: 0.7,
     start: "top top",
     end: () => `+=${document.documentElement.scrollHeight}`,
     // end: "+=1000%",

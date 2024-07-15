@@ -35,3 +35,7 @@ body {
 section:nth-child(odd) {
   justify-content: flex-end;
 }
+
+.section1 {
+  margin-top: 400vh;
+}
